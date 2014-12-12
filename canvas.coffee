@@ -1,11 +1,14 @@
 # constants
-SQUARE_SIZE = 20
+SQUARE_SIZE = 30
 BOARD_WIDTH = 40
 BOARD_HEIGHT = 30
 
 CALC_BUFFER = 2
 
 # functions
+drawGrid = () ->
+	drawLine ctx, i, 0, i, canvas.height for i in [0.5..canvas.width+0.5] by SQUARE_SIZE
+	drawLine ctx, 0, i, canvas.width, i for i in [0.5..canvas.height+0.5] by SQUARE_SIZE
 drawLine = (ctx, sx, sy, fx, fy) ->
 	ctx.moveTo(sx, sy)
 	ctx.lineTo(fx, fy)
@@ -20,8 +23,6 @@ getMousePos = (canvas, evt) ->
 toggleCell = (rawX, rawY) ->
 	cellX = Math.floor(rawX / SQUARE_SIZE) + CALC_BUFFER
 	cellY = Math.floor(rawY / SQUARE_SIZE) + CALC_BUFFER
-	x = (cellX - CALC_BUFFER) * SQUARE_SIZE + 1
-	y = (cellY - CALC_BUFFER) * SQUARE_SIZE + 1
 
 	# toggle bit in active
 	idx = -1
@@ -31,28 +32,44 @@ toggleCell = (rawX, rawY) ->
 		idx = active[cellY].indexOf(cellX)
 
 	if idx == -1
-		fillCell x, y
+		fillCell rawX, rawY
 		active[cellY].unshift cellX
 	else
-		clearCell x, y
+		clearCell rawX, rawY
 		if active[cellY].length == 1
 			active.splice cellY, cellY + 1
 		else
 			active[cellY].splice idx, idx + 1
 
-fillCell = (x, y) ->
-	ctx.fillRect x+.5, y+.5, SQUARE_SIZE - 1.5, SQUARE_SIZE - 1.5
+fillCell = (rawX, rawY) ->
+	x = Math.floor(rawX / SQUARE_SIZE) * SQUARE_SIZE + 1
+	y = Math.floor(rawY / SQUARE_SIZE) * SQUARE_SIZE + 1
+	ctx.fillRect x, y, SQUARE_SIZE - 1, SQUARE_SIZE - 1
 
-clearCell = (x, y) ->
+clearCell = (rawX, rawY) ->
+	x = Math.floor(rawX / SQUARE_SIZE) * SQUARE_SIZE + 1
+	y = Math.floor(rawY / SQUARE_SIZE) * SQUARE_SIZE + 1
 	ctx.clearRect x, y, SQUARE_SIZE - 1, SQUARE_SIZE - 1
 
 update = () ->
 	# TODO
 
 getLiveNeighbors = (row, col) ->
-	# TODO
+	neighborList = []
+	# check top and bottom
+	for r in [row-1..row+1] by 2
+		if typeof active[r] != 'undefined'
+			for i in [col-1..col+1]
+				if typeof active[r][i] != 'undefined'
+					neighborList.add active[r][i]
 
+	# check same row
+	if typeof active[row][col-1] != undefined
+		neighborList.add active[row][col-1]
+	if typeof active[row][col+1] != undefined
+		neighborList.add active[row][col+1]
 
+	return neighborList
 
 # MAIN CODE
 # set board size
@@ -71,9 +88,7 @@ ctx = canvas.getContext('2d')
 ctx.strokeStyle = '#ccc'
 ctx.fillStyle = 'red'
 
-# draw grid
-drawLine ctx, i, 0, i, canvas.height for i in [0.5..canvas.width+0.5] by SQUARE_SIZE
-drawLine ctx, 0, i, canvas.width, i for i in [0.5..canvas.height+0.5] by SQUARE_SIZE
+drawGrid()
 
 # Listen for user input
 
@@ -83,3 +98,7 @@ canvas.addEventListener('click', (evt) ->
 , false)
 
 document.getElementById('step').addEventListener('click', update, false)
+document.getElementById('reset').addEventListener('click', () ->
+	ctx.clearRect 0, 0, canvas.width, canvas.height
+	drawGrid()
+, false)

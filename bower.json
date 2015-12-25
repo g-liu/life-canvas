@@ -1,0 +1,21 @@
+{
+  "name": "life-canvas",
+  "description": "Conway's Game of Life on an HTML5 Canvas",
+  "main": "canvas.js",
+  "authors": [
+    "Geoffrey Liu"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "simulation"
+  ],
+  "homepage": "https://github.com/g-liu/life-canvas",
+  "moduleType": [],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
